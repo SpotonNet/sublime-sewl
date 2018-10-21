@@ -1,0 +1,339 @@
+%YAML1.2
+---
+name: SEWL
+file_extensions: [sewl]
+scope: source.sewl
+
+variables:
+  separator: '((?= )|$)'
+  until_separator: '\S*'
+  name: '[A-Za-z][A-Za-z0-9]*'
+  integer: '\d+'
+
+contexts:
+
+  # start of a line
+  main:
+
+    # blank lines
+    - match: ^\s*$
+
+    # comments
+    - match: ^\s*//.*$
+      scope: comment.line.double_slash.sewl
+
+    # breakpoint definition
+    - match: ^breakpoints{{separator}}
+      scope: keyword.other.sewl
+      set: breakpoint
+
+    # short fragment syntax without parameters
+    - match: '^({{name}}):'
+      captures:
+        1: meta.function.sewl entity.name.function.sewl
+      set: error
+
+    # short fragment syntax with parameters
+    - match: '^({{name}})\('
+      captures:
+        1: meta.function.sewl entity.name.function.sewl
+      set: fragment_parameter
+
+    # layouts and long fragment syntax
+    - match: ^(layout|fragment){{separator}}
+      scope: keyword.other.sewl
+      set: attribute
+
+    # set expression
+    - match: set{{separator}}
+      scope: keyword.control.sewl
+      set: [error, control_value, control_name]
+
+    # unrecognised keyword
+    - match: ^\S+{{separator}}
+      scope: invalid.illegal.sewl
+      set: ignore
+
+    # valid indentation
+    - match: '^(  )+(?! )'
+      set: indented
+
+    # invalid indentation
+    - match: '^(  )* (?! )'
+      scope: invalid.illegal.sewl
+      set: ignore
+
+  # ignores the rest of a line following an error
+  ignore:
+
+    - match: .*$
+      pop: true
+
+  # highlights the rest of a line as an error
+  error:
+
+    - match: .*$
+      scope: invalid.illegal.sewl
+      pop: true
+
+  # highlights until the next space as an error and ignore the rest of the line
+  error_until_space:
+
+    - match: \S*
+      scope: invalid.illegal.sewl
+
+    - match: .*$
+      pop: true
+
+  # expecting a fragment parameter
+  fragment_parameter:
+
+    # abrupt end of line
+    - match: $
+      pop: true
+
+    # parameter
+    - match: '{{name}}'
+      scope: variable.parameter.sewl
+      set: fragment_after_parameter
+
+    # invalid text
+    - match: '(?=.)'
+      set: error
+
+  # after a fragment parameter
+  fragment_after_parameter:
+
+    # abrupt end of line
+    - match: $
+      pop: true
+
+    # end of definition
+    - match: '\):'
+      set: error
+
+    # parameter separator
+    - match: ','
+      score: punctuation.separator.sewl
+      set: fragment_parameter
+
+    # invalid text
+    - match: '(?=.)'
+      set: error
+
+  # after valid indentation
+  indented:
+
+    # short include syntax
+    - match: '\+'
+      scope: keyword.control.sewl
+      set: value
+
+    # long include syntax
+    - match: 'include{{separator}}'
+      scope: keyword.control.sewl
+      set: attribute
+
+    # breakpoint expression
+    - match: (=|<=|>=|<|>|!)
+      scope: keyword.control.sewl
+      set: value
+
+    - match: (anchor|basket|blog|blogfeed|blogmenu|blogpost|breakpoint|category|choice|colourblock|column|columns|comments|confirmation|cookies|copyright|debug|divider|dropdown|edit|facebooklikebox|feed|field|fieldgrid|file|flash|flex|flexitem|form|gallery|hark|headeroptions|heading|iframe|iframeparameter|iframewithparameters|image|linkedin|map|media|mode|multimedia|navigation|option|optional|options|pay|plusone|privacypolicy|product|request|row|search|searchresults|section|sectionoptions|share|shop|shopnavigation|shoptree|showhide|split|splitoptions|sticky|superoptions|table|text|textonimage|translate|tree|twitter|upload)\b
+      scope: keyword.other.sewl
+      set: attribute
+
+    - match: (if|elseif){{separator}}
+      scope: keyword.control.sewl
+      set: [error, control_value]
+
+    - match: else{{separator}}
+      scope: keyword.control.sewl
+      set: error
+
+    - match: for{{separator}}
+      scope: keyword.control.sewl
+      set: [error, control_numeric_value, control_numeric_value, control_name]
+
+    - match: foreach{{separator}}
+      scope: keyword.control.sewl
+      set: [error, control_value, control_name]
+
+    - match: set{{separator}}
+      scope: keyword.control.sewl
+      set: [error, control_value, control_name]
+
+    - match: style{{separator}}
+      scope: keyword.other.sewl
+      set: ignore
+
+    # unrecognised keyword
+    - match: '\S*{{separator}}'
+      scope: invalid.illegal.sewl
+      set: ignore
+
+  breakpoint:
+
+    - match: $
+      pop: true
+
+    - match: \b{{name}}\b
+      scope: string.unquoted.sewl
+      set: breakpoint_operator
+
+    - match: \b\d+\b
+      scope: constant.numeric.sewl
+      set: breakpoint_operator
+
+  breakpoint_operator:
+
+    - match: $
+      pop: true
+
+    - match: (<=|<)
+      scope: keyword.operator.sewl
+      set: breakpoint
+
+  attribute:
+
+    - match: $
+      pop: true
+
+    - match: \s+
+
+    - match: '{{name}}{{until_separator}}'
+      scope: entity.other.attribute-name.sewl
+      set: value
+
+  value:
+
+    - match: $
+      pop: true
+
+    - match: \s+
+
+    - match: '{{integer}}{{separator}}'
+      scope: constant.numeric.sewl
+      set: attribute
+
+    - match: '\$[A-Za-z][A-Za-z0-9]*{{separator}}'
+      scope: variable.parameter.sewl
+      set: attribute
+
+    - match: '{[^}]*}{{separator}}'
+      set: attribute
+
+    - match: '"'
+      scope: string.quoted.double.sewl
+      set: quoted_value
+
+    - match: '[^"{]{{until_separator}}'
+      scope: string.unquoted.sewl
+      set: attribute
+
+    - match: '{{until_separator}}'
+      scope: invalid.illegal.sewl
+      set: attribute
+
+  quoted_value:
+
+    - meta_scope: string.quoted.double.sewl
+
+    - match: $
+      pop: true
+
+    - match: '\\"'
+      scope: constant.character.escape.sewl
+
+    - match: '"{{separator}}'
+      set: attribute
+
+    - match: '"'
+      set: error_until_space
+
+    - match: '[^"\\]'
+
+  control_name:
+
+    - match: $
+      pop: true
+
+    - match: \s+
+
+    - match: '{{name}}{{separator}}'
+      scope: variable.parameter.sewl
+      pop: true
+
+    - match: '{{until_separator}}'
+      scope: invalid.illegal.sewl
+      pop: true
+
+  control_value:
+
+    - match: $
+      pop: true
+
+    - match: \s+
+
+    - match: '{{integer}}{{separator}}'
+      scope: constant.numeric.sewl
+      pop: true
+
+    - match: '\$[A-Za-z][A-Za-z0-9]*{{separator}}'
+      scope: variable.parameter.sewl
+      pop: true
+
+    - match: '{[^}]*}{{separator}}'
+      pop: true
+
+    - match: '"'
+      scope: string.quoted.double.sewl
+      set: quoted_control_value
+
+    - match: '[^"{]{{until_separator}}'
+      scope: string.unquoted.sewl
+      pop: true
+
+    - match: '{{until_separator}}'
+      scope: invalid.illegal.sewl
+      pop: true
+
+  quoted_control_value:
+
+    - meta_scope: string.quoted.double.sewl
+
+    - match: $
+      pop: true
+
+    - match: '\\"'
+      scope: constant.character.escape.sewl
+
+    - match: '"{{separator}}'
+      pop: true
+
+    - match: '"'
+      set: error_until_space
+
+    - match: '[^"\\]'
+
+  control_numeric_value:
+
+    - match: $
+      pop: true
+
+    - match: \s+
+
+    - match: '{{integer}}{{separator}}'
+      scope: constant.numeric.sewl
+      pop: true
+
+    - match: '\$[A-Za-z][A-Za-z0-9]*{{separator}}'
+      scope: variable.parameter.sewl
+      pop: true
+
+    - match: '{[^}]*}{{separator}}'
+      pop: true
+
+    - match: '{{until_separator}}'
+      scope: invalid.illegal.sewl
+      pop: true
