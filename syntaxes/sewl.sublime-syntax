@@ -5,31 +5,35 @@ file_extensions: [sewl]
 scope: source.sewl
 
 variables:
-  separator: '((?= )|$)'
-  until_separator: '\S*'
   name: '[A-Za-z][A-Za-z0-9]*'
-  integer: '\d+'
+  value_decimal: \d+\.\d+\b
+  value_integer: \d+\b
+  unary_operator_arithmetic: '-'
+  unary_operator_word: '\b(floor|ceil|round|count)\b'
+  binary_operator_arithmetic: '(\+|-|\*|/|%)'
+  binary_operator_logical: '(\?|:|&&|\|\||==|!=|<>|<=|>=|!|<|>)'
+  binary_operator_word: '\bcontains\b'
+  binary_operator_other: '\.'
 
 contexts:
 
   # clear the context at the end of the line
   prototype:
-
-    - match: $
+    - match: '$'
       pop: true
 
   # start of a line
   main:
 
     # blank lines
-    - match: ^\s*$
+    - match: '^\s*$'
 
     # comments
-    - match: ^\s*//.*$
+    - match: '^\s*//.*$'
       scope: comment.line.double_slash.sewl
 
     # breakpoint definition
-    - match: ^breakpoints{{separator}}
+    - match: '^breakpoints\b'
       scope: keyword.other.sewl
       set: breakpoint
 
@@ -46,17 +50,17 @@ contexts:
       set: fragment_parameter
 
     # layouts and long fragment syntax
-    - match: ^(layout|fragment){{separator}}
+    - match: '^(layout|fragment)\b'
       scope: keyword.other.sewl
-      set: attribute
+      set: parameter_name
 
     # set expression
-    - match: set{{separator}}
+    - match: 'set\b'
       scope: keyword.control.sewl
-      set: [error, control_value, control_name]
+      set: [error, value, name]
 
     # unrecognised keyword
-    - match: ^\S+{{separator}}
+    - match: '^\S+\b'
       scope: invalid.illegal.sewl
       set: ignore
 
@@ -71,24 +75,13 @@ contexts:
 
   # ignores the rest of a line following an error
   ignore:
-
-    - match: .*$
+    - match: '.*$'
       pop: true
 
   # highlights the rest of a line as an error
   error:
-
-    - match: .*$
+    - match: '.*$'
       scope: invalid.illegal.sewl
-      pop: true
-
-  # highlights until the next space as an error and ignore the rest of the line
-  error_until_space:
-
-    - match: \S*
-      scope: invalid.illegal.sewl
-
-    - match: .*$
       pop: true
 
   # expecting a fragment parameter
@@ -125,186 +118,405 @@ contexts:
     # short include syntax
     - match: '\+'
       scope: keyword.control.sewl
-      set: value
+      set: parameter_value
 
     # long include syntax
-    - match: 'include{{separator}}'
+    - match: 'include\b'
       scope: keyword.control.sewl
-      set: attribute
+      set: parameter_name
 
     # breakpoint expression
-    - match: (=|<=|>=|<|>|!)
+    - match: '(=|<=|>=|<|>|!)'
       scope: keyword.control.sewl
-      set: value
+      set: parameter_value
 
-    - match: (anchor|basket|blog|blogfeed|blogmenu|blogpost|breakpoint|category|choice|colourblock|column|columns|comments|confirmation|cookies|copyright|debug|divider|dropdown|edit|facebooklikebox|feed|field|fieldgrid|file|flash|flex|flexitem|form|gallery|hark|headeroptions|heading|iframe|iframeparameter|iframewithparameters|image|linkedin|map|media|mode|multimedia|navigation|option|optional|options|pay|plusone|privacypolicy|product|request|row|search|searchresults|section|sectionoptions|share|shop|shopnavigation|shoptree|showhide|split|splitoptions|sticky|superoptions|table|text|textonimage|translate|tree|twitter|upload)\b
+    # component name
+    - match: '(anchor|basket|blog|blogfeed|blogmenu|blogpost|breakpoint|category|choice|colourblock|column|columns|comments|confirmation|cookies|copyright|debug|divider|dropdown|edit|facebooklikebox|feed|field|fieldgrid|file|flash|flex|flexitem|form|gallery|hark|headeroptions|heading|iframe|iframeparameter|iframewithparameters|image|linkedin|map|media|mode|multimedia|navigation|option|optional|options|pay|plusone|privacypolicy|product|request|row|search|searchresults|section|sectionoptions|share|shop|shopnavigation|shoptree|showhide|split|splitoptions|sticky|superoptions|table|text|textonimage|translate|tree|twitter|upload)\b'
       scope: keyword.other.sewl
-      set: attribute
+      set: parameter_name
 
-    - match: (if|elseif){{separator}}
+    # if or elseif
+    - match: '(if|elseif)\b'
       scope: keyword.control.sewl
-      set: [error, control_value]
+      set: [error, value]
 
-    - match: else{{separator}}
+    # else
+    - match: 'else\b'
       scope: keyword.control.sewl
       set: error
 
-    - match: for{{separator}}
+    # for
+    - match: 'for\b'
       scope: keyword.control.sewl
-      set: [error, control_numeric_value, control_numeric_value, control_name]
+      set: [error, value, value, name]
 
-    - match: foreach{{separator}}
+    # foreach
+    - match: 'foreach\b'
       scope: keyword.control.sewl
-      set: [error, control_value, control_name]
+      set: [error, value, name]
 
-    - match: set{{separator}}
+    #set
+    - match: 'set\b'
       scope: keyword.control.sewl
-      set: [error, control_value, control_name]
+      set: [error, value, name]
 
-    - match: style{{separator}}
+    # style
+    - match: 'style\b'
       scope: keyword.other.sewl
-      set: ignore
-
-    # unrecognised keyword
-    - match: '\S*{{separator}}'
-      scope: invalid.illegal.sewl
-      set: ignore
-
-  breakpoint:
-
-    - match: \b{{name}}\b
-      scope: string.unquoted.sewl
-      set: breakpoint_operator
-
-    - match: \b\d+\b
-      scope: constant.numeric.sewl
-      set: breakpoint_operator
-
-  breakpoint_operator:
-
-    - match: (<=|<)
-      scope: keyword.operator.sewl
-      set: breakpoint
-
-  attribute:
-
-    - match: \s+
-
-    - match: '{{name}}{{until_separator}}'
-      scope: entity.other.attribute-name.sewl
       set: value
 
+    # unrecognised keyword
+    - match: '\S+\b'
+      scope: invalid.illegal.sewl
+      set: ignore
+
+  # a breakpoint name or width
+  breakpoint:
+
+    # name
+    - match: '{{name}}\b'
+      scope: string.unquoted.sewl
+      set: breakpoint_operator
+
+    # integer
+    - match: '\d+\b'
+      scope: constant.numeric.integer.sewl
+      set: breakpoint_operator
+
+  # a breakpoint comparator
+  breakpoint_operator:
+
+    # comparator
+    - match: '(<=|<)'
+      scope: keyword.operator.logical.sewl
+      set: breakpoint
+
+  # a parameter name
+  parameter_name:
+
+    # parameter name
+    - match: '{{name}}\b'
+      scope: entity.other.attribute-name.sewl
+      set: parameter_value
+
+    # unrecognised character
+    - match: '\S+\b'
+      scope: invalid.illegal.sewl
+      set: ignore
+
+  # a value for a parameter
+  parameter_value:
+
+    # start of expression
+    - match: '{'
+      set: [parameter_name, expression]
+
+    # variable
+    - match: '(\$)({{name}})\b'
+      captures:
+        1: variable.other.sewl punctuation.definition.variable.sewl
+        2: variable.other.sewl
+      set: parameter_name
+
+    # decimal
+    - match: '{{value_decimal}}'
+      scope: constant.numeric.float.sewl
+      set: parameter_name
+
+    # integer
+    - match: '{{value_integer}}'
+      scope: constant.numeric.integer.sewl
+      set: parameter_name
+
+    # quoted string
+    - match: '"'
+      set: [parameter_name, quoted_string]
+
+    # unquoted string literal
+    - match: '\S+\b'
+      scope: string.unquoted.sewl
+      set: parameter_name
+
+  # a variable name
+  name:
+
+    # variable name
+    - match: '{{name}}\b'
+      scope: variable.other.sewl
+      pop: true
+
+    # unrecognised character
+    - match: '\S+\b'
+      scope: invalid.illegal.sewl
+      set: ignore
+
+  # a value
   value:
 
-    - match: \s+
+    # start of expression
+    - match: '{'
+      set: expression
 
-    - match: '{{integer}}{{separator}}'
-      scope: constant.numeric.sewl
-      set: attribute
+    # variable
+    - match: '(\$)({{name}})\b'
+      captures:
+        1: variable.other.sewl punctuation.definition.variable.sewl
+        2: variable.other.sewl
+      pop: true
 
-    - match: '\$[A-Za-z][A-Za-z0-9]*{{separator}}'
-      scope: variable.parameter.sewl
-      set: attribute
+    # decimal
+    - match: '{{value_decimal}}'
+      scope: constant.numeric.float.sewl
+      pop: true
 
-    - match: '{[^}]*}{{separator}}'
-      set: attribute
+    # integer
+    - match: '{{value_integer}}'
+      scope: constant.numeric.integer.sewl
+      pop: true
 
+    # quoted string
     - match: '"'
-      scope: string.quoted.double.sewl
-      set: quoted_value
+      set: quoted_string
 
-    - match: '[^"{]{{until_separator}}'
-      scope: string.unquoted.sewl
-      set: attribute
-
-    - match: '{{until_separator}}'
+    # unrecognised character
+    - match: '\S+\b'
       scope: invalid.illegal.sewl
-      set: attribute
+      set: ignore
 
-  quoted_value:
+  # a quoted string
+  quoted_string:
 
     - meta_scope: string.quoted.double.sewl
 
+    # end of quoted string
+    - match: '"'
+      pop: true
+
+    # escaped quote mark
     - match: '\\"'
       scope: constant.character.escape.sewl
 
-    - match: '"{{separator}}'
-      set: attribute
+  # top-level expression
+  expression:
 
+    # end of expression
+    - match: '}'
+      pop: true
+
+    # start of nested expression
+    - match: '\('
+      set: [after_expression, subexpression]
+
+    # variable
+    - match: '(\$)({{name}})\b'
+      captures:
+        1: variable.other.sewl punctuation.definition.variable.sewl
+        2: variable.other.sewl
+      set: after_expression
+
+    # decimal
+    - match: '{{value_decimal}}'
+      scope: constant.numeric.float.sewl
+      set: after_expression
+
+    # integer
+    - match: '{{value_integer}}'
+      scope: constant.numeric.integer.sewl
+      set: after_expression
+
+    # quoted string
     - match: '"'
-      set: error_until_space
+      set: [after_expression, quoted_string]
 
-    - match: '[^"\\]'
+    - include: expression_common
 
-  control_name:
+  # subexpression (in round brackets)
+  subexpression:
 
-    - match: \s+
+    # unexpected end of expression
+    - match: '}'
+      set: error
 
-    - match: '{{name}}{{separator}}'
-      scope: variable.parameter.sewl
-      pop: true
+    # start of nested expression
+    - match: '\('
+      set: [after_subexpression, subexpression]
 
-    - match: '{{until_separator}}'
-      scope: invalid.illegal.sewl
-      pop: true
+    # variable
+    - match: '(\$)({{name}})\b'
+      captures:
+        1: variable.other.sewl punctuation.definition.variable.sewl
+        2: variable.other.sewl
+      set: after_subexpression
 
-  control_value:
+    # decimal
+    - match: '{{value_decimal}}'
+      scope: constant.numeric.float.sewl
+      set: after_subexpression
 
-    - match: \s+
+    # integer
+    - match: '{{value_integer}}'
+      scope: constant.numeric.integer.sewl
+      set: after_subexpression
 
-    - match: '{{integer}}{{separator}}'
-      scope: constant.numeric.sewl
-      pop: true
-
-    - match: '\$[A-Za-z][A-Za-z0-9]*{{separator}}'
-      scope: variable.parameter.sewl
-      pop: true
-
-    - match: '{[^}]*}{{separator}}'
-      pop: true
-
+    # quoted string
     - match: '"'
-      scope: string.quoted.double.sewl
-      set: quoted_control_value
+      set: [after_subexpression, quoted_string]
 
-    - match: '[^"{]{{until_separator}}'
-      scope: string.unquoted.sewl
-      pop: true
+    - include: expression_common
 
-    - match: '{{until_separator}}'
-      scope: invalid.illegal.sewl
-      pop: true
+  # index expression (in square brackets)
+  index_expression:
 
-  quoted_control_value:
+    # unexpected end of expression
+    - match: '(}|\))'
+      set: error
 
-    - meta_scope: string.quoted.double.sewl
+    # start of nested expression
+    - match: '\('
+      set: [after_index_expression, subexpression]
 
-    - match: '\\"'
-      scope: constant.character.escape.sewl
+    # variable
+    - match: '(\$)({{name}})\b'
+      captures:
+        1: variable.other.sewl punctuation.definition.variable.sewl
+        2: variable.other.sewl
+      set: after_index_expression
 
-    - match: '"{{separator}}'
-      pop: true
+    # decimal
+    - match: '{{value_decimal}}'
+      scope: constant.numeric.float.sewl
+      set: after_index_expression
 
+    # integer
+    - match: '{{value_integer}}'
+      scope: constant.numeric.integer.sewl
+      set: after_index_expression
+
+    # quoted string
     - match: '"'
-      set: error_until_space
+      set: [after_index_expression, quoted_string]
 
-    - match: '[^"\\]'
+    - include: expression_common
 
-  control_numeric_value:
+  # common patterns for all expression scopes
+  expression_common:
 
-    - match: \s+
+    # skip spaces
+    - match: '\s+'
 
-    - match: '{{integer}}{{separator}}'
-      scope: constant.numeric.sewl
+    # arithmetic operator
+    - match: '{{unary_operator_arithmetic}}'
+      scope: keyword.operator.arithmetic.sewl
+
+    # word operator
+    - match: '{{unary_operator_word}}'
+      scope: keyword.operator.word.sewl
+
+    # unrecognised operator
+    - match: '(?=.)'
+      set: error
+
+  # after a term in an expression
+  after_expression:
+
+    # end of expression
+    - match: '}'
       pop: true
 
-    - match: '\$[A-Za-z][A-Za-z0-9]*{{separator}}'
-      scope: variable.parameter.sewl
+    # end of nested expression
+    - match: '\)'
       pop: true
 
-    - match: '{[^}]*}{{separator}}'
+    # arithmetic operator
+    - match: '{{binary_operator_arithmetic}}'
+      scope: keyword.operator.arithmetic.sewl
+      set: expression
+
+    # logical operator
+    - match: '{{binary_operator_logical}}'
+      scope: keyword.operator.logical.sewl
+      set: expression
+
+    # word operator
+    - match: '{{binary_operator_word}}'
+      scope: keyword.operator.word.sewl
+      set: expression
+
+    # other operator
+    - match: '{{binary_operator_other}}'
+      scope: keyword.operator.sewl
+      set: expression
+
+    - include: after_expression_common
+
+  # after a term in a subexpression
+  after_subexpression:
+
+    # end of nested expression
+    - match: '\)'
       pop: true
 
-    - match: '{{until_separator}}'
-      scope: invalid.illegal.sewl
+    # arithmetic operator
+    - match: '{{binary_operator_arithmetic}}'
+      scope: keyword.operator.arithmetic.sewl
+      set: subexpression
+
+    # logical operator
+    - match: '{{binary_operator_logical}}'
+      scope: keyword.operator.logical.sewl
+      set: subexpression
+
+    # word operator
+    - match: '{{binary_operator_word}}'
+      scope: keyword.operator.word.sewl
+      set: subexpression
+
+    # other operator
+    - match: '{{binary_operator_other}}'
+      scope: keyword.operator.sewl
+      set: subexpression
+
+    - include: after_expression_common
+
+  # after a term in an index expression
+  after_index_expression:
+
+    # end of index expression
+    - match: ']'
       pop: true
+
+    # arithmetic operator
+    - match: '{{binary_operator_arithmetic}}'
+      scope: keyword.operator.arithmetic.sewl
+      set: index_expression
+
+    # logical operator
+    - match: '{{binary_operator_logical}}'
+      scope: keyword.operator.logical.sewl
+      set: index_expression
+
+    # word operator
+    - match: '{{binary_operator_word}}'
+      scope: keyword.operator.word.sewl
+      set: index_expression
+
+    # other operator
+    - match: '{{binary_operator_other}}'
+      scope: keyword.operator.sewl
+      set: index_expression
+
+    - include: after_expression_common
+
+  # common patterns for all 'after expression' scopes
+  after_expression_common:
+
+    # skip spaces
+    - match: '\s+'
+
+    # start of index expression
+    - match: '\['
+      push: index_expression
+
+    # unrecognised operator
+    - match: '(?=.)'
+      set: error
