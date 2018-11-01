@@ -57,7 +57,7 @@ contexts:
     # set expression
     - match: 'set\b'
       scope: keyword.control.sewl
-      set: [error, value, name]
+      set: [error, value_or_literal, name]
 
     # unrecognised keyword
     - match: '^\S+\b'
@@ -158,7 +158,7 @@ contexts:
     #set
     - match: 'set\b'
       scope: keyword.control.sewl
-      set: [error, value, name]
+      set: [error, value_or_literal, name]
 
     # style
     - match: 'style\b'
@@ -207,6 +207,11 @@ contexts:
   # a value for a parameter
   parameter_value:
 
+    # unquoted string literal
+    - match: '([^\s{$\d"]\S*|\d+\S+)\b'
+      scope: string.unquoted.sewl
+      set: parameter_name
+
     # start of expression
     - match: '{'
       set: [parameter_name, expression]
@@ -232,11 +237,6 @@ contexts:
     - match: '"'
       set: [parameter_name, quoted_string]
 
-    # unquoted string literal
-    - match: '\S+\b'
-      scope: string.unquoted.sewl
-      set: parameter_name
-
   # a variable name
   name:
 
@@ -249,6 +249,16 @@ contexts:
     - match: '\S+\b'
       scope: invalid.illegal.sewl
       set: ignore
+
+  # a value or literal
+  value_or_literal:
+
+    # unquoted string literal
+    - match: '([^\s{$\d"]\S*|\d+\S+)\b'
+      scope: string.unquoted.sewl
+      pop: true
+
+    - include: value
 
   # a value
   value:
