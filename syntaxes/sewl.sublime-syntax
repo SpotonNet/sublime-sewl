@@ -131,7 +131,7 @@ contexts:
       set: parameter_value
 
     # component name
-    - match: '(anchor|basket|blog|blogfeed|blogmenu|blogpost|breakpoint|category|choice|colourblock|column|columns|comments|confirmation|cookies|copyright|debug|divider|dropdown|edit|facebooklikebox|feed|field|fieldgrid|file|flash|flex|flexitem|form|gallery|hark|headeroptions|heading|iframe|iframeparameter|iframewithparameters|image|linkedin|map|media|mode|multimedia|navigation|option|optional|options|pay|plusone|privacypolicy|product|request|row|search|searchresults|section|sectionoptions|share|shop|shopnavigation|shoptree|showhide|split|splitoptions|sticky|superoptions|table|text|textonimage|translate|tree|twitter|upload)\b'
+    - match: '(anchor|background|basket|blog|blogfeed|blogmenu|blogpost|breakpoint|category|choice|colourblock|column|columns|comments|confirmation|cookies|copyright|debug|divider|dropdown|edit|facebooklikebox|feed|field|fieldgrid|file|flash|flex|flexitem|form|gallery|hark|headeroptions|heading|iframe|iframeparameter|iframewithparameters|image|linkedin|map|media|mode|multimedia|navigation|option|optional|options|pay|plusone|privacypolicy|product|request|row|search|searchresults|section|sectionoptions|share|shop|shopnavigation|shoptree|showhide|split|splitoptions|sticky|superoptions|table|text|textonimage|translate|tree|twitter|upload)\b'
       scope: keyword.other.sewl
       set: parameter_name
 
