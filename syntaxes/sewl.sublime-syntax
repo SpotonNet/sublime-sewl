@@ -6,6 +6,7 @@ scope: source.sewl
 
 variables:
   name: '[A-Za-z][A-Za-z0-9]*'
+  parameter: '[a-z]+(-[a-z]+)*'
   value_decimal: \d+\.\d+\b
   value_integer: \d+\b
   unary_operator_arithmetic: '-'
@@ -199,7 +200,7 @@ contexts:
   parameter_name:
 
     # parameter name
-    - match: '{{name}}\b'
+    - match: '{{parameter}}\b'
       scope: entity.other.attribute-name.sewl
       set: parameter_value
 
