@@ -115,6 +115,10 @@ contexts:
   # after valid indentation
   indented:
 
+    # continuations
+    - match: '- '
+      set: parameter_name
+
     # short include syntax
     - match: '\+'
       scope: keyword.control.sewl
