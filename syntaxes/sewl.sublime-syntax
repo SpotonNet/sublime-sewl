@@ -116,9 +116,12 @@ contexts:
   # after valid indentation
   indented:
 
-    # continuations
+    # continuation
     - match: '- '
       set: parameter_name
+
+    # grid template definition
+    - match: '# .*'
 
     # short include syntax
     - match: '\+'
