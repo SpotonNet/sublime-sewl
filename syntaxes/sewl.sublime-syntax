@@ -139,7 +139,7 @@ contexts:
       set: parameter_value
 
     # component name
-    - match: '(anchor|background|basket|blog|blogfeed|blogmenu|blogpost|breakpoint|button|category|choice|colourblock|column|columns|comments|confirmation|cookies|copyright|debug|divider|dropdown|edit|facebooklikebox|feed|field|fieldgrid|file|flex|flexitem|form|gallery|grid|griditem|heading|iframe|image|map|mode|multimedia|navigation|option|optional|options|pay|privacypolicy|product|request|row|search|searchresults|section|sectionoptions|share|shared|shop|showhide|split|splitoptions|sticky|superoptions|table|text|textonimage|translate|tree|trustpilot|twitter|upload|yoshki)\b'
+    - match: '(anchor|background|basket|blog|blogfeed|blogmenu|blogpost|breakpoint|button|category|choice|colourblock|column|columns|comments|confirmation|cookies|copyright|debug|divider|dropdown|edit|facebooklikebox|feed|field|fieldgrid|file|flex|flexitem|form|gallery|grid|griditem|heading|help|iframe|image|map|mode|multimedia|navigation|option|optional|options|pay|privacypolicy|product|request|row|search|searchresults|section|sectionoptions|share|shared|shop|showhide|split|splitoptions|sticky|superoptions|table|text|textonimage|translate|tree|trustpilot|twitter|upload|yoshki)\b'
       scope: keyword.other.sewl
       set: parameter_name
 
